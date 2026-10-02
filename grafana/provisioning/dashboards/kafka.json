@@ -1,0 +1,103 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "colorMode": "value", "graphMode": "none", "textMode": "auto" },
+      "targets": [
+        { "expr": "kafka_brokers", "refId": "A" }
+      ],
+      "title": "Brokers online",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 0 },
+      "id": 2,
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "auto" },
+      "targets": [
+        { "expr": "kafka_consumergroup_members{consumergroup=\"emb-worker\"}", "refId": "A" }
+      ],
+      "title": "Consumer group members (emb-worker)",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 0 },
+      "id": 3,
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "auto" },
+      "targets": [
+        { "expr": "sum(kafka_consumergroup_lag{consumergroup=\"emb-worker\"})", "refId": "A" }
+      ],
+      "title": "Total consumer lag",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "id": 4,
+      "options": { "legend": { "displayMode": "table", "placement": "right" } },
+      "targets": [
+        { "expr": "kafka_consumergroup_lag{consumergroup=\"emb-worker\"}", "legendFormat": "{{topic}}/p{{partition}}", "refId": "A" }
+      ],
+      "title": "Consumer lag per partition",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "id": 5,
+      "options": { "legend": { "displayMode": "table", "placement": "right" } },
+      "targets": [
+        { "expr": "kafka_topic_partition_current_offset{topic=\"transactions\"}", "legendFormat": "producer offset p{{partition}}", "refId": "A" },
+        { "expr": "kafka_consumergroup_current_offset{consumergroup=\"emb-worker\",topic=\"transactions\"}", "legendFormat": "consumer offset p{{partition}}", "refId": "B" }
+      ],
+      "title": "Producer vs consumer offsets (transactions)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "id": 6,
+      "options": { "legend": { "displayMode": "table", "placement": "right" } },
+      "targets": [
+        { "expr": "rate(kafka_topic_partition_current_offset{topic=\"transactions\"}[1m])", "legendFormat": "produced/s", "refId": "A" },
+        { "expr": "rate(kafka_consumergroup_current_offset{consumergroup=\"emb-worker\",topic=\"transactions\"}[1m])", "legendFormat": "consumed/s", "refId": "B" }
+      ],
+      "title": "Kafka throughput (transactions topic)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "id": 7,
+      "options": { "legend": { "displayMode": "table", "placement": "right" } },
+      "targets": [
+        { "expr": "kafka_topic_partitions{topic=\"transactions\"}", "legendFormat": "partitions", "refId": "A" }
+      ],
+      "title": "Topic partitions (transactions)",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "tags": ["evermade", "kafka"],
+  "templating": { "list": [] },
+  "time": { "from": "now-15m", "to": "now" },
+  "timezone": "browser",
+  "title": "EverMade Bank — Kafka",
+  "uid": "emb-kafka",
+  "version": 1
+}
