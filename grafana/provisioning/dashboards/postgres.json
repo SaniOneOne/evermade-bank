@@ -6,24 +6,37 @@
   "panels": [
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0 }, "overrides": [] },
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
       "id": 1,
-      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull","max"] } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean","max"] } },
       "targets": [
-        { "expr": "sum by (state) (pg_stat_activity_count{datname=\"evermade_bank\"})", "legendFormat": "{{state}}", "refId": "A" }
+        { "expr": "container_cpu_utilization_ratio{container_name=\"emb-postgres\"} * 100", "legendFormat": "CPU %", "refId": "A" }
       ],
-      "title": "Postgres: activity by state",
+      "title": "Postgres CPU (%)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
+      "id": 2,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean","max"] } },
+      "targets": [
+        { "expr": "container_memory_usage_total_bytes{container_name=\"emb-postgres\"}", "legendFormat": "RAM used", "refId": "A" },
+        { "expr": "container_memory_usage_limit_bytes{container_name=\"emb-postgres\"}", "legendFormat": "RAM limit", "refId": "B" }
+      ],
+      "title": "Postgres RAM",
       "type": "timeseries"
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
-      "id": 2,
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
+      "id": 3,
       "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
       "targets": [
-        { "expr": "pg_stat_database_numbackends{datname=\"evermade_bank\"}", "legendFormat": "backends", "refId": "A" },
+        { "expr": "pg_stat_database_numbackends{datname=\"evermade_bank\"}", "legendFormat": "connections", "refId": "A" },
         { "expr": "pg_settings_max_connections", "legendFormat": "max_connections", "refId": "B" }
       ],
       "title": "Postgres: connections vs max",
@@ -32,8 +45,8 @@
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
-      "id": 3,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 4,
       "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
       "targets": [
         { "expr": "rate(pg_stat_database_xact_commit{datname=\"evermade_bank\"}[1m])", "legendFormat": "commits/s", "refId": "A" },
@@ -45,33 +58,20 @@
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
-      "id": 4,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 5,
       "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
       "targets": [
-        { "expr": "pg_locks_count{mode=\"exclusiveLock\"}", "legendFormat": "exclusive", "refId": "A" },
-        { "expr": "pg_locks_count{mode=\"shareLock\"}", "legendFormat": "share", "refId": "B" }
+        { "expr": "pg_locks_count{mode=\"exclusiveLock\"}", "legendFormat": "exclusive locks", "refId": "A" },
+        { "expr": "pg_locks_count{mode=\"shareLock\"}", "legendFormat": "share locks", "refId": "B" }
       ],
       "title": "Postgres: locks",
       "type": "timeseries"
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "Bps" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
-      "id": 5,
-      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
-      "targets": [
-        { "expr": "rate(pg_stat_database_blks_read{datname=\"evermade_bank\"}[1m]) * 8192", "legendFormat": "read B/s", "refId": "A" },
-        { "expr": "rate(pg_stat_database_blks_hit{datname=\"evermade_bank\"}[1m]) * 8192", "legendFormat": "hit B/s", "refId": "B" }
-      ],
-      "title": "Postgres: disk/cache I/O",
-      "type": "timeseries"
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "percentunit" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
       "id": 6,
       "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
       "targets": [

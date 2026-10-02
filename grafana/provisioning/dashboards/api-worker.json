@@ -1,0 +1,98 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0 }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean","max"] } },
+      "targets": [
+        { "expr": "container_cpu_utilization_ratio{container_name=\"emb-api\"} * 100", "legendFormat": "emb-api CPU %", "refId": "A" },
+        { "expr": "container_cpu_utilization_ratio{container_name=\"emb-worker\"} * 100", "legendFormat": "emb-worker CPU %", "refId": "B" }
+      ],
+      "title": "CPU: API vs Worker",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean","max"] } },
+      "targets": [
+        { "expr": "container_memory_usage_total_bytes{container_name=\"emb-api\"}", "legendFormat": "emb-api RAM", "refId": "A" },
+        { "expr": "container_memory_usage_total_bytes{container_name=\"emb-worker\"}", "legendFormat": "emb-worker RAM", "refId": "B" },
+        { "expr": "container_memory_usage_limit_bytes{container_name=\"emb-api\"}", "legendFormat": "emb-api limit", "refId": "C" }
+      ],
+      "title": "RAM: API vs Worker",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "Bps" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 3,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        { "expr": "rate(container_network_io_usage_rx_bytes_total{container_name=\"emb-api\"}[1m])", "legendFormat": "api RX", "refId": "A" },
+        { "expr": "rate(container_network_io_usage_tx_bytes_total{container_name=\"emb-api\"}[1m])", "legendFormat": "api TX", "refId": "B" },
+        { "expr": "rate(container_network_io_usage_rx_bytes_total{container_name=\"emb-worker\"}[1m])", "legendFormat": "worker RX", "refId": "C" },
+        { "expr": "rate(container_network_io_usage_tx_bytes_total{container_name=\"emb-worker\"}[1m])", "legendFormat": "worker TX", "refId": "D" }
+      ],
+      "title": "Network I/O: API & Worker",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 4,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        { "expr": "container_restarts_total{container_name=~\"emb-(api|worker)\"}", "legendFormat": "{{container_name}} restarts", "refId": "A" },
+        { "expr": "container_uptime_seconds{container_name=~\"emb-(api|worker)\"}", "legendFormat": "{{container_name}} uptime", "refId": "B" }
+      ],
+      "title": "Restarts & Uptime",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 5,
+      "options": { "legend": { "displayMode": "table", "placement": "right" } },
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum by (le, path) (rate(banking_http_request_duration_seconds_bucket{path=~\"/transfer|/login|/register\"}[1m])))", "legendFormat": "p95 {{path}}", "refId": "A" },
+        { "expr": "histogram_quantile(0.99, sum by (le, path) (rate(banking_http_request_duration_seconds_bucket{path=~\"/transfer|/login|/register\"}[1m])))", "legendFormat": "p99 {{path}}", "refId": "B" }
+      ],
+      "title": "API latency (hot paths)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "id": 6,
+      "options": { "legend": { "displayMode": "table", "placement": "right" } },
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum by (le) (rate(banking_tx_process_seconds_bucket[1m])))", "legendFormat": "p95 tx process", "refId": "A" },
+        { "expr": "histogram_quantile(0.99, sum by (le) (rate(banking_tx_process_seconds_bucket[1m])))", "legendFormat": "p99 tx process", "refId": "B" }
+      ],
+      "title": "Worker: tx processing latency",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "tags": ["evermade", "api", "worker"],
+  "templating": { "list": [] },
+  "time": { "from": "now-15m", "to": "now" },
+  "timezone": "browser",
+  "title": "EverMade Bank — API & Worker",
+  "uid": "emb-api-worker",
+  "version": 1
+}

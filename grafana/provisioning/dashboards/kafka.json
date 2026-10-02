@@ -6,32 +6,33 @@
   "panels": [
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
-      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 0 },
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0 }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
       "id": 1,
-      "options": { "colorMode": "value", "graphMode": "none", "textMode": "auto" },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean","max"] } },
       "targets": [
-        { "expr": "kafka_brokers", "refId": "A" }
+        { "expr": "container_cpu_utilization_ratio{container_name=\"emb-kafka\"} * 100", "legendFormat": "CPU %", "refId": "A" }
       ],
-      "title": "Brokers online",
-      "type": "stat"
+      "title": "Kafka CPU (%)",
+      "type": "timeseries"
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
-      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 0 },
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
       "id": 2,
-      "options": { "colorMode": "value", "graphMode": "area", "textMode": "auto" },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean","max"] } },
       "targets": [
-        { "expr": "kafka_consumergroup_members{consumergroup=\"emb-worker\"}", "refId": "A" }
+        { "expr": "container_memory_usage_total_bytes{container_name=\"emb-kafka\"}", "legendFormat": "RAM used", "refId": "A" },
+        { "expr": "container_memory_usage_limit_bytes{container_name=\"emb-kafka\"}", "legendFormat": "RAM limit", "refId": "B" }
       ],
-      "title": "Consumer group members (emb-worker)",
-      "type": "stat"
+      "title": "Kafka RAM",
+      "type": "timeseries"
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
-      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 0 },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
       "id": 3,
       "options": { "colorMode": "value", "graphMode": "area", "textMode": "auto" },
       "targets": [
@@ -43,7 +44,7 @@
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
       "id": 4,
       "options": { "legend": { "displayMode": "table", "placement": "right" } },
       "targets": [
@@ -54,40 +55,42 @@
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
-      "id": 5,
-      "options": { "legend": { "displayMode": "table", "placement": "right" } },
-      "targets": [
-        { "expr": "kafka_topic_partition_current_offset{topic=\"transactions\"}", "legendFormat": "producer offset p{{partition}}", "refId": "A" },
-        { "expr": "kafka_consumergroup_current_offset{consumergroup=\"emb-worker\",topic=\"transactions\"}", "legendFormat": "consumer offset p{{partition}}", "refId": "B" }
-      ],
-      "title": "Producer vs consumer offsets (transactions)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
-      "id": 6,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 5,
       "options": { "legend": { "displayMode": "table", "placement": "right" } },
       "targets": [
         { "expr": "rate(kafka_topic_partition_current_offset{topic=\"transactions\"}[1m])", "legendFormat": "produced/s", "refId": "A" },
         { "expr": "rate(kafka_consumergroup_current_offset{consumergroup=\"emb-worker\",topic=\"transactions\"}[1m])", "legendFormat": "consumed/s", "refId": "B" }
       ],
-      "title": "Kafka throughput (transactions topic)",
+      "title": "Kafka throughput (transactions)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "Bps" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 6,
+      "options": { "legend": { "displayMode": "table", "placement": "right" } },
+      "targets": [
+        { "expr": "rate(container_network_io_usage_rx_bytes_total{container_name=\"emb-kafka\"}[1m])", "legendFormat": "RX Bps", "refId": "A" },
+        { "expr": "rate(container_network_io_usage_tx_bytes_total{container_name=\"emb-kafka\"}[1m])", "legendFormat": "TX Bps", "refId": "B" }
+      ],
+      "title": "Kafka network I/O",
       "type": "timeseries"
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
       "id": 7,
       "options": { "legend": { "displayMode": "table", "placement": "right" } },
       "targets": [
-        { "expr": "kafka_topic_partitions{topic=\"transactions\"}", "legendFormat": "partitions", "refId": "A" }
+        { "expr": "kafka_topic_partitions{topic=\"transactions\"}", "legendFormat": "partitions", "refId": "A" },
+        { "expr": "kafka_consumergroup_members{consumergroup=\"emb-worker\"}", "legendFormat": "consumer members", "refId": "B" },
+        { "expr": "container_restarts_total{container_name=\"emb-kafka\"}", "legendFormat": "kafka restarts", "refId": "C" }
       ],
-      "title": "Topic partitions (transactions)",
+      "title": "Kafka topology & restarts",
       "type": "timeseries"
     }
   ],

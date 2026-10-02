@@ -1,7 +1,6 @@
 {
   "annotations": { "list": [] },
   "editable": true,
-  "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
   "links": [],
   "panels": [
@@ -10,7 +9,7 @@
       "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "id": 1,
-      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean","max","lastNotNull"] } },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean","max"] } },
       "targets": [
         { "expr": "sum by (path) (rate(banking_http_requests_total[1m]))", "legendFormat": "{{path}}", "refId": "A" }
       ],
@@ -22,7 +21,7 @@
       "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "id": 2,
-      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean","max"] } },
+      "options": { "legend": { "displayMode": "table", "placement": "right" } },
       "targets": [
         { "expr": "histogram_quantile(0.50, sum by (le, path) (rate(banking_http_request_duration_seconds_bucket[1m])))", "legendFormat": "p50 {{path}}", "refId": "A" },
         { "expr": "histogram_quantile(0.95, sum by (le, path) (rate(banking_http_request_duration_seconds_bucket[1m])))", "legendFormat": "p95 {{path}}", "refId": "B" },
@@ -33,24 +32,48 @@
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
-      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 8 },
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0 }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
       "id": 3,
-      "options": { "colorMode": "value", "graphMode": "area", "textMode": "auto" },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean","max"] } },
       "targets": [
-        { "expr": "sum(banking_http_requests_in_progress)", "refId": "A" }
+        { "expr": "container_cpu_utilization_ratio{container_name=~\"emb-(api|worker)\"} * 100", "legendFormat": "{{container_name}} CPU %", "refId": "A" }
       ],
-      "title": "In-flight requests",
-      "type": "stat"
+      "title": "CPU: API & Worker (%)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
+      "id": 4,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean","max"] } },
+      "targets": [
+        { "expr": "container_memory_usage_total_bytes{container_name=~\"emb-(api|worker)\"}", "legendFormat": "{{container_name}} RAM", "refId": "A" }
+      ],
+      "title": "RAM: API & Worker",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
+      "id": 5,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        { "expr": "sum(banking_http_requests_in_progress)", "legendFormat": "in-flight", "refId": "A" }
+      ],
+      "title": "API in-flight requests",
+      "type": "timeseries"
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
-      "gridPos": { "h": 6, "w": 9, "x": 6, "y": 8 },
-      "id": 4,
-      "options": { "legend": { "displayMode": "table", "placement": "right" } },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 6,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
       "targets": [
-        { "expr": "rate(banking_tx_produced_total[1m])", "legendFormat": "produced", "refId": "A" },
+        { "expr": "rate(banking_tx_produced_total[1m])", "legendFormat": "produced/s", "refId": "A" },
         { "expr": "sum by (status) (rate(banking_tx_processed_total[1m]))", "legendFormat": "processed {{status}}", "refId": "B" }
       ],
       "title": "Transactions: produced vs processed",
@@ -59,76 +82,13 @@
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
-      "gridPos": { "h": 6, "w": 9, "x": 15, "y": 8 },
-      "id": 5,
-      "options": { "legend": { "displayMode": "table", "placement": "right" } },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "id": 7,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
       "targets": [
         { "expr": "kafka_consumergroup_lag{consumergroup=\"emb-worker\"}", "legendFormat": "lag {{topic}}", "refId": "A" }
       ],
-      "title": "Kafka consumer lag (emb-worker)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 14 },
-      "id": 6,
-      "options": { "legend": { "displayMode": "table", "placement": "right" } },
-      "targets": [
-        { "expr": "rate(banking_users_registered_total[1m])", "legendFormat": "registered/s", "refId": "A" },
-        { "expr": "rate(banking_accounts_opened_total[1m])", "legendFormat": "accounts opened/s", "refId": "B" }
-      ],
-      "title": "Business: registrations & accounts",
-      "type": "timeseries"
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 14 },
-      "id": 7,
-      "options": { "legend": { "displayMode": "table", "placement": "right" } },
-      "targets": [
-        { "expr": "sum by (status) (rate(banking_logins_total[1m]))", "legendFormat": "logins {{status}}", "refId": "A" }
-      ],
-      "title": "Logins",
-      "type": "timeseries"
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 14 },
-      "id": 8,
-      "options": { "legend": { "displayMode": "table", "placement": "right" } },
-      "targets": [
-        { "expr": "rate(banking_loan_rates_requested_total[1m])", "legendFormat": "loan rate req/s", "refId": "A" }
-      ],
-      "title": "Loan rate requests",
-      "type": "timeseries"
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 22 },
-      "id": 9,
-      "options": { "legend": { "displayMode": "table", "placement": "right" } },
-      "targets": [
-        { "expr": "histogram_quantile(0.95, sum by (le) (rate(banking_tx_process_seconds_bucket[1m])))", "legendFormat": "p95 tx process", "refId": "A" },
-        { "expr": "histogram_quantile(0.99, sum by (le) (rate(banking_tx_process_seconds_bucket[1m])))", "legendFormat": "p99 tx process", "refId": "B" }
-      ],
-      "title": "Worker: tx processing latency",
-      "type": "timeseries"
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 22 },
-      "id": 10,
-      "options": { "legend": { "displayMode": "table", "placement": "right" } },
-      "targets": [
-        { "expr": "sum by (status) (increase(banking_tx_processed_total[5m]))", "legendFormat": "processed {{status}} (5m)", "refId": "A" },
-        { "expr": "increase(banking_tx_failed_total[5m])", "legendFormat": "kafka produce failed (5m)", "refId": "B" }
-      ],
-      "title": "Transactions processed (5m window)",
+      "title": "Kafka consumer lag",
       "type": "timeseries"
     }
   ],

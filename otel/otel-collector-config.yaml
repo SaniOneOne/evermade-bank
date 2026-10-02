@@ -1,0 +1,49 @@
+receivers:
+  docker_stats:
+    endpoint: unix:///var/run/docker.sock
+    api_version: "1.44"
+    collection_interval: 10s
+    timeout: 5s
+    excluded_images:
+      - ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib
+    metrics:
+      container.cpu.utilization:
+        enabled: true
+      container.memory.usage.total:
+        enabled: true
+      container.memory.percent:
+        enabled: true
+      container.memory.usage.limit:
+        enabled: true
+      container.network.io.usage.rx_bytes:
+        enabled: true
+      container.network.io.usage.tx_bytes:
+        enabled: true
+      container.restarts:
+        enabled: true
+      container.uptime:
+        enabled: true
+
+processors:
+  # копируем resource-атрибуты в datapoint-атрибуты —
+  # Prometheus exporter превратит их в обычные метки (container_name и т.д.)
+  transform:
+    error_mode: ignore
+    metric_statements:
+      - context: datapoint
+        statements:
+          - set(attributes["container_name"], resource.attributes["container.name"])
+          - set(attributes["container_id"], resource.attributes["container.id"])
+          - set(attributes["container_image"], resource.attributes["container.image.name"])
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    send_timestamps: true
+
+service:
+  pipelines:
+    metrics:
+      receivers: [docker_stats]
+      processors: [transform]
+      exporters: [prometheus]
