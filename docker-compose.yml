@@ -151,8 +151,6 @@ services:
     container_name: emb-otel-collector
     command: ["--config=/etc/otelcol-contrib/otel-collector-config.yaml"]
     user: "0:0"
-    group_add:
-      - "986"
     volumes:
       - ./otel/otel-collector-config.yaml:/etc/otelcol-contrib/otel-collector-config.yaml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -160,3 +158,4 @@ services:
       - "8889:8889"
     restart: unless-stopped
     networks: [bank]
+

@@ -13,12 +13,12 @@ CREATE TABLE IF NOT EXISTS users (
     created_at  TIMESTAMPTZ  DEFAULT NOW()
 );
 
--- Сессии (Bearer-токены)
+-- Сессии (Bearer-токены). Без TTL — как в WebTours:
+-- сессия живёт пока сервер её помнит (logout или рестарт БД).
 CREATE TABLE IF NOT EXISTS sessions (
     token       VARCHAR(64)  PRIMARY KEY,
     user_id     INT          NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    created_at  TIMESTAMPTZ  DEFAULT NOW(),
-    expires_at  TIMESTAMPTZ  NOT NULL
+    created_at  TIMESTAMPTZ  DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 
@@ -63,6 +63,20 @@ CREATE TABLE IF NOT EXISTS loan_rates (
     created_at  TIMESTAMPTZ  DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_loan_user ON loan_rates(user_id);
+
+-- ============================================================
+-- Ставки по вкладам (заполняются студенческой заглушкой через Kafka)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS deposit_rates (
+    id          BIGSERIAL PRIMARY KEY,
+    request_id  VARCHAR(64)   NOT NULL,
+    user_id     INT           NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    amount      NUMERIC(14,2) NOT NULL,
+    rate        NUMERIC(5,2)  NOT NULL,
+    created_at  TIMESTAMPTZ   DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_deposit_user       ON deposit_rates(user_id);
+CREATE INDEX IF NOT EXISTS idx_deposit_request_id ON deposit_rates(request_id);
 
 -- ============================================================
 -- Сид-данные
